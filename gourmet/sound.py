@@ -4,7 +4,8 @@ except ImportError:
     print('No pyglet player')
     try:
         from .sound_gst import Player
-    except ImportError:
+        # gi.require_version() gives ValueError if Gst is not available
+    except (ImportError, ValueError):
         print('No gst player')
         try:
             from .sound_windows import Player
