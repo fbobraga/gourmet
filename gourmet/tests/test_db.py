@@ -1,18 +1,33 @@
-import tempfile, unittest
+import os
+import tempfile
+import unittest
 from gourmet.backends import db
+from gourmet.plugin_loader import get_master_loader
 
 class DBTest (unittest.TestCase):
     def setUp (self):
         print('Calling setUp')
         # Remove all plugins for testing purposes
-        from gourmet.plugin_loader import get_master_loader
+
+        self._tempdir = tempfile.TemporaryDirectory()
+        td = self._tempdir.name
         ml = get_master_loader()
-        ml.save_active_plugins = lambda *args: True; # Don't save anything we do to plugins
+        # Any changes to plugins shouldn't affect real user config
+        self._saved_plugin_info = (
+            ml.active_plugins, ml.active_plugin_sets, ml.active_plugin_filename
+        )
+        ml.active_plugin_filename = os.path.join(td, 'active_plugins')
         ml.active_plugins = []
         ml.active_plugin_sets = []
         # Done knocking out plugins...
-        tmpfile = tempfile.mktemp()
-        self.db = db.get_database(file=tmpfile)
+        self.db = db.get_database(file=os.path.join(td, 'recipes.db'))
+
+    def tearDown(self):
+        ml = get_master_loader()
+        (
+            ml.active_plugins, ml.active_plugin_sets, ml.active_plugin_filename
+        ) = self._saved_plugin_info
+        self._tempdir.cleanup()
 
 class testRecBasics (DBTest):
     def runTest (self):
