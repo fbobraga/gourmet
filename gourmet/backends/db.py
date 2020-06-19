@@ -113,7 +113,7 @@ class DBObject:
 # categories_table: id -> recipe_id, category_entry_id -> id
 # ingredients_table: ingredient_id -> id, id -> recipe_id
 
-class RecData (Pluggable, BaseException):
+class RecData(Pluggable):
 
     """RecData is our base class for handling database connections.
 
@@ -124,17 +124,21 @@ class RecData (Pluggable, BaseException):
     AMT_MODE_AVERAGE = 1
     AMT_MODE_HIGH = 2
 
-    _singleton = {}
+    __single = None
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        if RecData.__single is None:
+            RecData.__single = cls(*args, **kwargs)
+
+        return RecData.__single
 
     def __init__ (self, file=os.path.join(gglobals.gourmetdir,'recipes.db'),
                   custom_url=None):
         # hooks run after adding, modifying or deleting a recipe.
         # Each hook is handed the recipe, except for delete_hooks,
         # which is handed the ID (since the recipe has been deleted)
-        if file in RecData._singleton:
-            raise RecData._singleton[file]
-        else:
-            RecData._singleton[file] = self
+
         # We keep track of IDs we've handed out with new_id() in order
         # to prevent collisions
         self.new_ids = []
@@ -1844,6 +1848,18 @@ class RecData (Pluggable, BaseException):
 
 
 class RecipeManager (RecData):
+    # TODO: Inheritance & singletons really don't mix.
+    # Repeating the singleton machinery here means we get one instance of
+    # RecData and one of RecipeManager. But that means we've really got two
+    # instances of RecData.
+    __single = None
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        if RecipeManager.__single is None:
+            RecipeManager.__single = cls(*args, **kwargs)
+
+        return RecipeManager.__single
 
     def __init__ (self,*args,**kwargs):
         debug('recipeManager.__init__()',3)
@@ -2099,10 +2115,7 @@ class dbDic:
 #recipe_table -> recipe_table
 
 def get_database (*args,**kwargs):
-    try:
-        return RecData(*args,**kwargs)
-    except RecData as rd:
-        return rd
+    return RecData.instance()
 
 if __name__ == '__main__':
     db = RecData()
