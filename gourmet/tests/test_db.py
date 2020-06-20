@@ -20,9 +20,13 @@ class DBTest (unittest.TestCase):
         ml.active_plugins = []
         ml.active_plugin_sets = []
         # Done knocking out plugins...
-        self.db = db.get_database(file=os.path.join(td, 'recipes.db'))
+
+        # Use a temporary database for this test
+        self.db = db.get_database()
+        self._db_prev = self.db._switch_to(os.path.join(td, 'recipes.db'))
 
     def tearDown(self):
+        self.db._switch_to(*self._db_prev)
         ml = get_master_loader()
         (
             ml.active_plugins, ml.active_plugin_sets, ml.active_plugin_filename

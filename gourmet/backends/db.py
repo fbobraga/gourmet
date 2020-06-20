@@ -213,6 +213,28 @@ class RecData(Pluggable):
         Session.configure(bind=self.db)
         debug('Done initializing DB connection',1)
 
+    def _switch_to(self, filename, url=None):
+        """For tests: reconnect to a different database
+
+        Ideally, we would just create separate RecData instances, but
+        all sorts of pieces assume this is a singleton and store references
+        to it, so at the moment creating new instances doesn't work nicely.
+        This is meant to be a workaround for a degree of test isolation.
+        -TAK, June 2020
+        """
+        # Return the previous DB info, to facilitate switching back
+        prev = self.filename, self.url
+        self.filename = filename
+        if url is None:
+            url = 'sqlite:///' + self.filename
+        self.url = url
+
+        self.initialize_connection()
+        self.setup_tables()
+        self.metadata.create_all()
+        self.update_version_info(gourmet.version.version)
+        return prev
+
     def save (self):
         """Save our database (if we have a separate 'save' concept)"""
         row = self.fetch_one(self.info_table)
@@ -2115,7 +2137,7 @@ class dbDic:
 #recipe_table -> recipe_table
 
 def get_database (*args,**kwargs):
-    return RecData.instance()
+    return RecData.instance(*args, **kwargs)
 
 if __name__ == '__main__':
     db = RecData()
