@@ -20,7 +20,7 @@ sudo apt-get install flatpak
 ```
 
 As Gourmet is still under active development, the flatpak is not available from
-Flathub, and instead must be [downloaded and installed manually](https://github.com/kirienko/gourmet/releases/tag/v1-alpha1).
+Flathub, and instead must be [downloaded and installed manually](https://github.com/kirienko/gourmet/releases/tag/v1-alpha2).
 
 In a terminal, execute the following: 
 ```sh
@@ -53,7 +53,7 @@ flatpak remove io.github.thinkle.Gourmet
 
 ## Python Wheel
 
-[Download the wheel](https://github.com/kirienko/gourmet/releases/tag/v1-alpha1)  
+[Download the wheel](https://github.com/kirienko/gourmet/releases/tag/v1-alpha2)
 Dependencies must be manually installed.
 
 ### Unbutu 20.04, Linux Mint 20
